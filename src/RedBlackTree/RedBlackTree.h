@@ -589,40 +589,40 @@ class RedBlackTree {
     }
   }
 
-  Node<T> *FindNodeByKey(Node<T> *root, const T &key) const {
-    if (GetSize() == 0) {
-      return root;
-    }
-    if (root == nullptr) {
-      return nil_;
-    }
-    if (root->data_.first == key) {
-      return root;
-    }
-    if (key < root->data_.first) {
-      return FindNodeForMap(root->left_, key);
-    } else {
-      return FindNodeForMap(root->right_, key);
-    }
-  }
+  // Node<T> *FindNodeByKey(Node<T> *root, const T &key) const {
+  //   if (GetSize() == 0) {
+  //     return root;
+  //   }
+  //   if (root == nullptr) {
+  //     return nil_;
+  //   }
+  //   if (root->data_.first == key) {
+  //     return root;
+  //   }
+  //   if (key < root->data_.first) {
+  //     return FindNodeForMap(root->left_, key);
+  //   } else {
+  //     return FindNodeForMap(root->right_, key);
+  //   }
+  // }
 
-  void PrintHelper(Node<T> *root, std::string indent, bool last) const {
-    if (root != nil_) {
-      std::cerr << indent;
-      if (last) {
-        std::cerr << "R----";
-        indent += "     ";
-      } else {
-        std::cerr << "L----";
-        indent += "|    ";
-      }
-      std::string print_color = root->color_ == Color::kRed ? "RED" : "BLACK";
-      std::cerr << root->data_ << "(" << print_color << ")"
-                << "\n";
-      PrintHelper(root->left_, indent, false);
-      PrintHelper(root->right_, indent, true);
-    }
-  }
+  // void PrintHelper(Node<T> *root, std::string indent, bool last) const {
+  //   if (root != nil_) {
+  //     std::cerr << indent;
+  //     if (last) {
+  //       std::cerr << "R----";
+  //       indent += "     ";
+  //     } else {
+  //       std::cerr << "L----";
+  //       indent += "|    ";
+  //     }
+  //     std::string print_color = root->color_ == Color::kRed ? "RED" : "BLACK";
+  //     std::cerr << root->data_ << "(" << print_color << ")"
+  //               << "\n";
+  //     PrintHelper(root->left_, indent, false);
+  //     PrintHelper(root->right_, indent, true);
+  //   }
+  // }
 };
 }  // namespace s21
 
