@@ -1,7 +1,7 @@
 CC              := gcc
 CXXFLAGS 		:= -std=c++17 -Wall -Werror -Wextra -Wshadow -Wconversion
 CXX_NO_EXTRA_FLAGS := -std=c++17
-CXXCOV 			:= --coverage
+CXXCOV 			:= --coverage -g
 SOURCES = \
 				tests/set_tests.cc \
 				tests/multiset_tests.cc \
@@ -13,42 +13,29 @@ test: clean
 	${CC} ${CXXFLAGS} ${CXXCOV} $(SOURCES) -lgtest -lstdc++ -lm  -o test.out
 	./test.out
 	@make clean
+	
 test_no_flags: clean
 	${CC} ${CXX_NO_EXTRA_FLAGS} ${CXXCOV} $(SOURCES) -lgtest -lstdc++ -lm  -o test.out
 	./test.out
 	@make clean
 
 valgrind: clean
-	${CC} ${FLAGS} $(SOURCES) -lgtest -lstdc++ -o test.out
+	${CC} ${CXXFLAGS} ${CXXCOV} $(SOURCES) -lgtest -lstdc++ -lm -o test.out
 	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --log-file=valgrind.log ./test.out
 
-gcov_report:
+gcov_report: clean
 	${CC} ${CXXFLAGS} ${CXXCOV} $(SOURCES) -lgtest -lstdc++ -lm -o test_cov.out
 	./test_cov.out
-	lcov -t "containers" -o containers.info --ignore-errors mismatch --no-external -c -d .
+	lcov -t "containers" -o containers.info --ignore-errors mismatch,inconsistent --no-external -c -d .
 	make clean_gcov
 	genhtml -o report containers.info
 	open report/index.html
 
 cppcheck:
-	@find .. -type f -name "*.cc" -exec cppcheck --enable=all --suppress=missingIncludeSystem {} \;
-	@find .. -type f -name "*.c" -exec cppcheck --enable=all --suppress=missingIncludeSystem {} \;
-	@find .. -type f -name "*.h" -exec cppcheck --enable=all --suppress=missingIncludeSystem {} \;
+	@find .. -type f -name "*.cc" -exec cppcheck --enable=all --suppress=missingIncludeSystem --language=c++ --std=c++17 {} \;
+	@find .. -type f -name "*.c" -exec cppcheck --enable=all --suppress=missingIncludeSystem --language=c++ --std=c++17 {} \;
+	@find .. -type f -name "*.h" -exec cppcheck --enable=all --suppress=missingIncludeSystem --language=c++ --std=c++17 {} \;
 	@echo "Cppcheck is finished"
-
-style:
-	@find .. -type f -name "*.cpp" -exec clang-format -i -style=Google {} \;
-	@find .. -type f -name "*.cc" -exec clang-format -i -style=Google {} \;
-	@find .. -type f -name "*.h" -exec clang-format -i -style=Google {} \;
-	@find .. -type f -name "*.inl" -exec clang-format -i -style=Google {} \;
-	@echo "Clang format style apply is finished"
-
-style_check:
-	@find .. -type f -name "*.cpp" -exec clang-format -n -style=Google {} \;
-	@find .. -type f -name "*.cc" -exec clang-format -n -style=Google {} \;
-	@find .. -type f -name "*.h" -exec clang-format -n -style=Google {} \;
-	@find .. -type f -name "*.inl" -exec clang-format -n -style=Google {} \;
-	@echo "Clang format style check is finished"
 
 clean: clean_project clean_static_lib clean_log clean_exec clean_obj clean_gcov clean_lcov clean_lcov_report
 	@echo "Clean finished"

@@ -11,7 +11,7 @@ class MultisetTest : public ::testing::Test {
  protected:
   void SetUp() override {
     stdMultisetTenElements = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-    myMultisetTenElements = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    myMultisetTenElements = multiset<int>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
   }
 
   std::multiset<int> stdMultisetTenElements{};

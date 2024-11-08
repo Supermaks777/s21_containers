@@ -17,36 +17,32 @@ class multiset {
 
   using size_type = std::size_t;
 
- public: /* Member */
+ public: /* Set Member functions */
   multiset() = default;
 
-  multiset(std::initializer_list<value_type> const &items) {
+  explicit multiset(std::initializer_list<value_type> const &items) {
     for (const auto &item : items) insert(item);
   };
 
-  multiset(const multiset &other) { copy_from(other); }
+  multiset(const multiset &s) { copy_from(s); }
 
-  multiset(multiset &&other) noexcept { this->RBT_ = std::move(other.RBT_); }
+  multiset(multiset &&s) noexcept { this->RBT_ = std::move(s.RBT_); }
 
- public: /* Operators */
-  multiset<Key> &operator=(const multiset &other) {
-    if (this != &other) {
-        this->RBT_ = other.RBT_;
-        copy_from(other);
-    }
+  multiset<Key> &operator=(const multiset &s) {
+    if (this != &s) copy_from(s);
     return *this;
   }
 
-  multiset<Key> &operator=(multiset &&other) noexcept {
-    if (this != &other) {
+  multiset<Key> &operator=(multiset &&s) noexcept {
+    if (this != &s) {
       this->RBT_.Clear();
-      this->RBT_ = std::move(other.RBT_);
+      this->RBT_ = std::move(s.RBT_);
     }
     return *this;
   }
 
 
- public: /* Iterators */
+ public: /* Set Iterators */
   iterator begin() { return RBT_.begin(); }
 
   const_iterator begin() const { return RBT_.begin(); }
@@ -55,8 +51,17 @@ class multiset {
 
   const_iterator end() const { return RBT_.end(); }
 
+ public: /* Capacity */
+  [[nodiscard]] bool empty() const { return RBT_.IsEmpty(); }
+
+  [[nodiscard]] size_t size() const { return RBT_.GetSize(); }
+
+  [[nodiscard]] size_t max_size() const { return RBT_.GetMaxSize(); }
+
  public: /* Modifiers */
   void clear() { RBT_.Clear(); }
+
+  iterator insert(const value_type &value) { return this->RBT_.Insert(value); }
 
   void erase(const value_type &value) { RBT_.Remove(value); }
 
@@ -67,43 +72,17 @@ class multiset {
     other.clear();
   }
 
-  iterator insert(const value_type &value) {
-    return this->RBT_.Insert(value);
-  }
-
-  //   iterator insert(const value_type &value) {
-  //   iterator result = this->RBT_.Insert(value);
-  //   return result;
-  // } // все равно ошибка
-
   template <typename... Args>
   std::vector<iterator> insert_many(Args &&...args) {
     std::initializer_list<value_type> items = {std::forward<Args>(args)...};
-    std::vector<iterator> result{};
-
-    for (const_reference item : items) result.push_back(insert(item));
+    std::vector<iterator> result(items.size());
+    std::transform(items.begin(), items.end(), result.begin(), [this](const_reference item) {
+        return insert(item);
+    });
     return result;
-  }
+}
 
-  // template <typename... Args> //все равно ошибка
-  // std::vector<iterator> insert_many(Args &&...args) {
-  //   std::initializer_list<value_type> items = {std::forward<Args>(args)...};
-  //   std::vector<iterator> result{};
-
-  //   for (const_reference item : items) {
-  //     result.push_back(insert(item));
-  //   }
-  //   return result;
-  // }
-
- public: /* Capacity */
-  [[nodiscard]] size_t max_size() const { return RBT_.GetMaxSize(); }
-
-  [[nodiscard]] bool empty() const { return RBT_.IsEmpty(); }
-
-  [[nodiscard]] size_t size() const { return RBT_.GetSize(); }
-
- public: /* Lookup */
+ public: /* Set Lookup */
     [[nodiscard]] iterator find(const value_type &value) const {
       Node<Key> *node = RBT_.Search(value);
       return (node == nullptr) ? end() : iterator(node, RBT_.GetNil());
@@ -113,6 +92,7 @@ class multiset {
     return RBT_.Search(value) != nullptr;
   }
 
+ public: /* Helper */
   std::pair<iterator, iterator> equal_range(const value_type &data) const {
     auto lower = lower_bound(data);
     auto upper = upper_bound(data);
@@ -127,7 +107,6 @@ class multiset {
     return this->RBT_.GetUpperBoundIterator(data);
   }
 
-  private:
   void copy_from(const multiset &other) {
     for (iterator cur = other.begin(); cur != other.end(); ++cur) insert(*cur);
   }

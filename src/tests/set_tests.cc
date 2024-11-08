@@ -14,7 +14,7 @@ class SetTest : public ::testing::Test {
 
   void SetUp() override {
     stdSetTenElements = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-    mySetTenElements = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    mySetTenElements = set<int> {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
   }
 };
 

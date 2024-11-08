@@ -119,7 +119,7 @@ class RedBlackTree {
 
   RedBlackTree() = default;
 
-  RedBlackTree(std::initializer_list<T> const &items) {
+  explicit RedBlackTree(std::initializer_list<T> const &items) {
     for (const auto &item : items) {
       Insert(item);
     }
@@ -176,19 +176,16 @@ class RedBlackTree {
   }
 
   bool operator==(const RedBlackTree &other) const {
-    if (GetSize() != other.GetSize()) {
-      return false;
-    }
+    bool result = true;
+    if (GetSize() != other.GetSize()) result = false;
     iterator iter_first = begin();
     iterator iter_second = other.begin();
-    while (iter_first != end()) {
-      if (*iter_first != *iter_second) {
-        return false;
-      }
+    while (result && iter_first != end()) {
+      if (*iter_first != *iter_second) result = false;
       ++iter_first;
       ++iter_second;
     }
-    return true;
+    return result;
   }
 
  public:
@@ -329,7 +326,6 @@ class RedBlackTree {
       ClearHelper(node->left_);
       ClearHelper(node->right_);
       delete node;
-      node = nullptr;
     }
   }
 
@@ -507,7 +503,6 @@ class RedBlackTree {
     }
 
     delete node_to_delete;
-    node_to_delete = nullptr;
 
     if (current_node_color == Color::kBlack) {
       FixDelete(child_node);
@@ -572,57 +567,20 @@ class RedBlackTree {
     node->color_ = Color::kBlack;
   }
 
-  Node<T> *FindNode(Node<T> *root, const T &data) const {
-    if (GetSize() == 0) {
-      return root;
-    }
-    if (root == nullptr) {
-      return nil_;
+Node<T> *FindNode(Node<T> *root, const T &data) const {
+    if (root == nullptr || root == nil_) {
+        return nil_;
     }
     if (root->data_ == data) {
-      return root;
+        return root;
     }
     if (data < root->data_) {
-      return FindNode(root->left_, data);
+        return FindNode(root->left_, data);
     } else {
-      return FindNode(root->right_, data);
+        return FindNode(root->right_, data);
     }
-  }
+}
 
-  // Node<T> *FindNodeByKey(Node<T> *root, const T &key) const {
-  //   if (GetSize() == 0) {
-  //     return root;
-  //   }
-  //   if (root == nullptr) {
-  //     return nil_;
-  //   }
-  //   if (root->data_.first == key) {
-  //     return root;
-  //   }
-  //   if (key < root->data_.first) {
-  //     return FindNodeForMap(root->left_, key);
-  //   } else {
-  //     return FindNodeForMap(root->right_, key);
-  //   }
-  // }
-
-  // void PrintHelper(Node<T> *root, std::string indent, bool last) const {
-  //   if (root != nil_) {
-  //     std::cerr << indent;
-  //     if (last) {
-  //       std::cerr << "R----";
-  //       indent += "     ";
-  //     } else {
-  //       std::cerr << "L----";
-  //       indent += "|    ";
-  //     }
-  //     std::string print_color = root->color_ == Color::kRed ? "RED" : "BLACK";
-  //     std::cerr << root->data_ << "(" << print_color << ")"
-  //               << "\n";
-  //     PrintHelper(root->left_, indent, false);
-  //     PrintHelper(root->right_, indent, true);
-  //   }
-  // }
 };
 }  // namespace s21
 

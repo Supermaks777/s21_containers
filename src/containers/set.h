@@ -10,45 +10,39 @@ class set {
   using value_type = Key;
   using reference = value_type &;
   using const_reference = const value_type &;
-
   using RedBlackTreeType = RedBlackTree<Key>;
   using iterator = typename RedBlackTreeType::const_iterator;
   using const_iterator = typename RedBlackTreeType::const_iterator;
-
   using size_type = std::size_t;
 
- public: /* Member */
+ public: /* Member functions */
   set() = default;
 
-  set(std::initializer_list<value_type> const &items) {
+  explicit set(std::initializer_list<value_type> const &items) {
     for (const auto &item : items) insert(item);
   };
 
-  set(const set &other) { copy_from(other); }
+  set(const set &s) { copy_from(s); }
 
-  set(set &&other) noexcept { this->RBT_ = std::move(other.RBT_); }
+  set(set &&s) noexcept { this->RBT_ = std::move(s.RBT_); }
 
   ~set() = default;
 
- public: /* Operators */
-  set<Key> &operator=(const set &other) {
-    if (this != &other) {
-        this->RBT_ = other.RBT_;
-        copy_from(other);
-    }
+  set<Key> &operator=(const set &s) {
+    if (this != &s) copy_from(s);
     return *this;
   }
 
-  set<Key> &operator=(set &&other) noexcept {
-    if (this != &other) {
+  set<Key> &operator=(set &&s) noexcept {
+    if (this != &s) {
       this->RBT_.Clear();
-      this->RBT_ = std::move(other.RBT_);
+      this->RBT_ = std::move(s.RBT_);
     }
     return *this;
 }
 
 
- public: /* Iterators */
+ public: /* Set Iterators */
   iterator begin() { return RBT_.begin(); }
 
   const_iterator begin() const { return RBT_.begin(); }
@@ -56,9 +50,26 @@ class set {
   iterator end() { return RBT_.end(); }
 
   const_iterator end() const { return RBT_.end(); }
+  
+ public: /* Set Capacity */
+  [[nodiscard]] bool empty() const { return RBT_.IsEmpty(); }
+
+  [[nodiscard]] size_t size() const { return RBT_.GetSize(); }
+
+  [[nodiscard]] size_t max_size() const { return RBT_.GetMaxSize(); }
 
  public: /* Modifiers */
   void clear() { RBT_.Clear(); }
+
+  std::pair<iterator, bool> insert(const value_type &value) {
+    std::pair<iterator, bool> result{};
+    result.first = this->find(value);
+    if (result.first == this->end()) {
+      result.first = this->RBT_.Insert(value);
+      result.second = true;
+    }
+    return result;
+  }
 
   void erase(const value_type &value) { RBT_.Remove(value); }
 
@@ -69,36 +80,17 @@ class set {
     other.clear();
   }
 
-  std::pair<iterator, bool> insert(const Key &value) {
-    std::pair<iterator, bool> result{};
-    result.first = this->find(value);
-    if (result.first == this->end()) {
-      result.first = this->RBT_.Insert(value);
-      result.second = true;
-    }
-    return result;
-  }
-
-  template <typename... Args>
-  std::vector<std::pair<iterator, bool>> insert_many(Args &&...args) {
+template <typename... Args>
+std::vector<std::pair<iterator, bool>> insert_many(Args &&...args) {
     std::initializer_list<value_type> items = {std::forward<Args>(args)...};
-    std::vector<std::pair<iterator, bool>> result{};
-
-    for (const_reference item : items) {
-      std::pair<iterator, bool> pair = this->insert(item);
-      result.push_back(pair);
-    }
+    std::vector<std::pair<iterator, bool>> result(items.size());
+    std::transform(items.begin(), items.end(), result.begin(), [this](const_reference item) {
+        return this->insert(item);
+    });
     return result;
-  }
-  
- public: /* Capacity */
-  [[nodiscard]] size_t max_size() const { return RBT_.GetMaxSize(); }
+}
 
-  [[nodiscard]] bool empty() const { return RBT_.IsEmpty(); }
-
-  [[nodiscard]] size_t size() const { return RBT_.GetSize(); }
-
- public: /* Lookup */
+ public: /* Set Lookup */
   [[nodiscard]] iterator find(const value_type &value) const {
     Node<Key> *node = RBT_.Search(value);
     return (node == nullptr) ? end() : iterator(node, RBT_.GetNil());
@@ -108,7 +100,7 @@ class set {
     return RBT_.Search(value) != nullptr;
   }
 
-  private:
+  private:  /* Helper */
   void copy_from(const set &other) {
     for (iterator cur = other.begin(); cur != other.end(); ++cur) insert(*cur);
   }
@@ -117,7 +109,6 @@ class set {
   RedBlackTreeType RBT_;
 
 };
-
 
 }  // namespace s21
 
